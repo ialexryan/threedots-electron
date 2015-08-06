@@ -33,7 +33,10 @@ app.on('ready', function() {
 
   // and load the index.html of the app.
   //mainWindow.loadUrl('file://' + __dirname + '/index.html');
-  mainWindow.loadUrl('https://app.asana.com');
+  // var userAgent = "FluidApp-Mac" + content?.getUserAgent();
+  mainWindow.loadUrl('https://app.asana.com', {
+      userAgent: "FluidApp-mac Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+  });
 
   // Open the devtools.
   //mainWindow.openDevTools();
