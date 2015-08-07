@@ -5,6 +5,8 @@ var MenuItem = require('menu-item');
 var Tray = require('tray');
 var path = require('path');
 var shell = require('shell');
+var asana = require('asana');
+var options = require('./options');
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -12,6 +14,7 @@ require('crash-reporter').start();
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
+var appIcon = null;
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -22,9 +25,16 @@ app.on('window-all-closed', function() {
   }
 });
 
+// oauth
+var client = asana.Client.create({
+    clientId: options.client_id,
+    clientSecret: options.client_secret,
+    redirectUri: options.redirect_uri
+});
+var access_token_set = false;
+
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
-var appIcon = null;
 app.on('ready', function() {
   // Create the browser window.
   mainWindow = new BrowserWindow({"width": 1280,
@@ -35,31 +45,61 @@ app.on('ready', function() {
                                   "title": "threedots"
                                 });
 
-  // and load the index.html of the app.
-  //mainWindow.loadUrl('file://' + __dirname + '/index.html');
-  // var userAgent = "FluidApp-Mac" + content?.getUserAgent();
-  mainWindow.loadUrl('https://app.asana.com', {
+  // Create the tray
+  var iconImage = path.join(__dirname, 'icon/','asanaicon.png');
+  appIcon = new Tray(iconImage);
+  appIcon.setToolTip('Asana');
+
+  // Oauth authentication
+  var oauthUrl = 'https://app.asana.com/-/oauth_authorize?'
+    + 'client_id=' + options.client_id
+    + '&redirect_uri=' + options.redirect_uri
+    + '&response_type=' + 'code';
+  mainWindow.loadUrl(oauthUrl, {
       userAgent: "FluidApp-mac Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
   });
 
-  var iconImage = path.join(__dirname, 'icon/','asanaicon.png');
-  appIcon = new Tray(iconImage);
-  var contextMenu = Menu.buildFromTemplate([
-    { label: 'Task1' },
-    { label: 'Task2' },
-    { label: 'Task3' }
-  ]);
-  appIcon.setToolTip('Asana');
-  appIcon.setContextMenu(contextMenu);
+  mainWindow.webContents.on('did-get-redirect-request', function(event, oldUrl, newUrl) {
+    var raw_code = /code=([^&]*)/.exec(newUrl) || null,
+      code = (raw_code && raw_code.length > 1) ? decodeURIComponent(raw_code[1]) : null;
 
-  mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
-      event.preventDefault();
-      shell.openExternal(url);
-  })
+    // authenticate with access token
+    if (code && !access_token_set) {
+      client.app.accessTokenFromCode(code).then(function(credentials) {
+        client.useOauth({
+          credentials: credentials
+        });
+        access_token_set = true;
+      });
+    }
 
-
-  // Open the devtools.
-  //mainWindow.openDevTools();
+    // set tray values
+    if (access_token_set) {
+      client.users.me().then(function(user) {
+        var userId = user.id;
+        var workspaceId = user.workspaces[0].id;
+        return client.tasks.findAll({
+          assignee: userId,
+          workspace: workspaceId,
+          opt_fields: 'id,name,assignee_status,completed,due_on'
+        });
+      }).then(function(response) {
+        console.log("response data", response.data);
+        return response.data;
+      }).filter(function(task) {
+        return task.due_on === new Date().toJSON().slice(0,10);
+      }).then(function(list) {
+        // show tasks due today
+        contextMenu = new Menu();
+        contextMenu.append(new MenuItem({ label: 'Due Today'}));
+        contextMenu.append(new MenuItem({ type: 'separator' }));
+        for (var i = 0; i < list.length; i++) {
+          contextMenu.append(new MenuItem({ label: list[i].name }));
+        }
+        appIcon.setContextMenu(contextMenu);
+      });
+    }
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
