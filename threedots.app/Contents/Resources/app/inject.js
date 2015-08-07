@@ -58,18 +58,23 @@
 
     ipc.on("load-task", function(taskId) {
         var session = env.realAppSession();
-        host.wrapInExceptionHandler(
-            "a.meh",
-            ExceptionHandler.ReentryStrategy.FAIL,
-            function() {
+        // host.wrapInExceptionHandler(
+        //     "a.meh",
+        //     ExceptionHandler.ReentryStrategy.FAIL,
+        //     function() {
                 processHandler(function() {
-                        session.navigateTo(navigationTargetForState({
-                            model: LunaUi.LunaNavigationModel.Project,
-                            target: new TaskId(taskId + "")
-                        }));
+                        try {
+                            session.navigateTo(navigationTargetForState({
+                                model: LunaUi.LunaNavigationModel.Project,
+                                target: new TaskId(taskId + "")
+                            }));
+                        } catch(e) {
+                            location = "https://app.asana.com/0/" + taskId + "/" + taskId;
+                            console.log(e)
+                        }
                     });
-                }
-        )();
+                // }
+        // )();
     });
 
 })();

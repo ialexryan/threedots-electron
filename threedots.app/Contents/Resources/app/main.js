@@ -111,6 +111,7 @@ app.on('activate-with-no-open-windows', function() {
 
 app.on('show-window', function() {
   mainWindow.show();
+  mainWindow.focus();
 });
 
 // Quit when all windows are closed.
