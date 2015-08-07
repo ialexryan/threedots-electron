@@ -3,6 +3,7 @@ var BrowserWindow = require('browser-window');  // Module to create native brows
 var Menu = require('menu');
 var MenuItem = require('menu-item');
 var shell = require('shell');
+var path = require("path");
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -28,6 +29,7 @@ app.on('ready', function() {
                                   "height": 800,
                                   "min-width": 750,
                                   "min-height": 300,
+                                  "preload": path.resolve(__dirname, "inject.js"),
                                   //frame: false,   https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
                                   "title": "threedots"
                                 });
