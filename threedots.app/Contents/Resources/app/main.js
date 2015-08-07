@@ -186,9 +186,9 @@ app.on('ready', function() {
     }
   });
 
-  // update tray contents every 1 minute
   // Make certain parts of the window draggable
-  mainWindow.webContents.on('did-finish-load', function(event) {
+  // update tray contents every 1 minute
+  mainWindow.webContents.on('did-finish-load', function() {
     var cssPath = path.resolve(__dirname, "frameless.css");
     var css = fs.readFileSync(cssPath, {encoding: 'utf8'});
     mainWindow.webContents.insertCSS(css);

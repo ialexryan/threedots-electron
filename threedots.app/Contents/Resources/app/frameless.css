@@ -32,3 +32,30 @@
 #right_pane {
     -webkit-app-region: no-drag;
 }
+
+/* the loading screen */
+#loading_screen_background {
+    -webkit-app-region: drag;
+}
+
+/* the login screen */
+.dialog-page {
+    -webkit-app-region: drag;
+}
+.dialog-container {
+    -webkit-app-region: no-drag;
+}
+
+/* google login process */
+.wrapper {               /* I pray Asana never starts using a class called wrapper... */
+    -webkit-app-region: drag;
+}
+.signin-card,
+.account-chooser-card,
+#account-chooser-link,
+#account-chooser-options,
+.form-panel.first,
+.form-panel.second,
+#connect-container {
+    -webkit-app-region: no-drag;
+}
