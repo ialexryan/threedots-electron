@@ -4,8 +4,11 @@ var clipboard = require('clipboard');
 var fs = require('fs');
 var Menu = require('menu');
 var MenuItem = require('menu-item');
+var Tray = require('tray');
+var path = require('path');
 var shell = require('shell');
-var path = require("path");
+var asana = require('asana');
+var options = require('./options');
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -13,6 +16,7 @@ require('crash-reporter').start();
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
+var appIcon = null;
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -22,6 +26,14 @@ app.on('window-all-closed', function() {
     app.quit();
   }
 });
+
+// oauth
+var client = asana.Client.create({
+    clientId: options.client_id,
+    clientSecret: options.client_secret,
+    redirectUri: options.redirect_uri
+});
+var access_token_set = false;
 
 function getSavedOrDefaultStateData() {
   // Read in the saved state
@@ -64,6 +76,67 @@ app.on('ready', function() {
       "title": "threedots"
     });
 
+  // Create the tray
+  var iconImage = path.join(__dirname, 'icon/','asanaicon.png');
+  appIcon = new Tray(iconImage);
+  appIcon.setToolTip('Asana');
+
+  // Oauth authentication
+  var oauthOrAuthorized = 'https://app.asana.com/-/oauth_authorize?'
+    + 'client_id=' + options.client_id
+    + '&redirect_uri=' + options.redirect_uri
+    + '&response_type=' + 'code';
+  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
+  mainWindow.loadUrl(oauthOrAuthorized, {
+      userAgent: userAgent
+  });
+
+  mainWindow.webContents.on('did-get-redirect-request', function(event, oldUrl, newUrl) {
+    var raw_code = /code=([^&]*)/.exec(newUrl) || null,
+      code = (raw_code && raw_code.length > 1) ? decodeURIComponent(raw_code[1]) : null;
+
+    // authenticate with access token
+    if (code && !access_token_set) {
+      client.app.accessTokenFromCode(code).then(function(credentials) {
+        client.useOauth({
+          credentials: credentials
+        });
+        access_token_set = true;
+      });
+
+      mainWindow.webContents.loadUrl(stateData.url, {
+          userAgent: userAgent
+      });
+    }
+
+    // set tray values
+    if (access_token_set) {
+      client.users.me().then(function(user) {
+        var userId = user.id;
+        var workspaceId = user.workspaces[0].id;
+        return client.tasks.findAll({
+          assignee: userId,
+          workspace: workspaceId,
+          opt_fields: 'id,name,assignee_status,completed,due_on'
+        });
+      }).then(function(response) {
+        console.log("response data", response.data);
+        return response.data;
+      }).filter(function(task) {
+        return task.due_on === new Date().toJSON().slice(0,10);
+      }).then(function(list) {
+        // show tasks due today
+        contextMenu = new Menu();
+        contextMenu.append(new MenuItem({ label: 'Due Today'}));
+        contextMenu.append(new MenuItem({ type: 'separator' }));
+        for (var i = 0; i < list.length; i++) {
+          contextMenu.append(new MenuItem({ label: list[i].name }));
+        }
+        appIcon.setContextMenu(contextMenu);
+      });
+    }
+  });
+
   // Restore the last window size and position
   mainWindow.setBounds(stateData.bounds);
 
@@ -71,11 +144,6 @@ app.on('ready', function() {
   mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
       event.preventDefault();
       shell.openExternal(url);
-  });
-
-  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
-  mainWindow.webContents.loadUrl(stateData.url, {
-       userAgent: userAgent
   });
 
   // Emitted before the window is closed.
