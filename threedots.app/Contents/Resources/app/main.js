@@ -84,6 +84,14 @@ app.on('ready', function() {
     mainWindow = null;
   });
 
+  app.on("browser-window-blur", function(event, window) {
+      window.send("blur");
+  });
+
+  app.on("browser-window-focus", function(event, window) {
+      window.send("focus");
+  });
+
   // Create the Application's main menu
   var template = [{
     label: 'threedots',

@@ -1,6 +1,8 @@
 (function() {
     var remote = require("remote");
     var app = remote.require("app");
+    var ipc = require("ipc");
+
     window.electronApp = app;
 
     var lastNotification = null;
@@ -40,13 +42,13 @@
         }
     }, 1000);
 
-    window.isActive = false;
-    app.on("browser-window-focus", function () {
-        window.isActive = true;
+    var isActive = true;
+    ipc.on("focus", function () {
+        isActive = true;
     });
 
-    app.on("browser-window-blur", function () {
-        window.isActive = false;
+    ipc.on("blur", function () {
+        isActive = false;
     });
 
 })();
