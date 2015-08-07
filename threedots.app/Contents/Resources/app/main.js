@@ -1,5 +1,7 @@
 var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
+var clipboard = require('clipboard');
+var fs = require('fs');
 var Menu = require('menu');
 var MenuItem = require('menu-item');
 var Tray = require('tray');
@@ -33,17 +35,46 @@ var client = asana.Client.create({
 });
 var access_token_set = false;
 
+function getSavedOrDefaultStateData() {
+  // Read in the saved state
+  var savedStatePath = app.getPath("userData") + "/saved_state";
+  if (fs.existsSync(savedStatePath)) {
+      var savedStateData = JSON.parse(fs.readFileSync(savedStatePath));
+      validSavedStateData = ('bounds','url' in savedStateData)
+                      && (savedStateData.url.startsWith("https://app.asana.com"))
+                      && ('x','y','width','height' in savedStateData.bounds);
+      if (validSavedStateData) {
+          return savedStateData;
+      }
+  }
+  return {bounds: {x: 0, y: 0, width: 1280, height: 800},
+             url: "https://app.asana.com"}
+}
+
+app.on('before-quit', function() {
+  mainWindow.forceClose = true;
+});
+
+app.on('activate-with-no-open-windows', function() {
+  mainWindow.show();
+});
+
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
+// This should be abstracted into a showAsana() function
+// which could be called on 'ready' and 'activate-with-no-open-windows' events
 app.on('ready', function() {
+
+  var stateData = getSavedOrDefaultStateData();
+
   // Create the browser window.
-  mainWindow = new BrowserWindow({"width": 1280,
-                                  "height": 800,
-                                  "min-width": 750,
-                                  "min-height": 300,
-                                  //frame: false,   https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
-                                  "title": "threedots"
-                                });
+  mainWindow = new BrowserWindow({
+      "min-width": 750,
+      "min-height": 300,
+      "preload": path.resolve(__dirname, "inject.js"),
+      //frame: false,  // https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
+      "title": "threedots"
+    });
 
   // Create the tray
   var iconImage = path.join(__dirname, 'icon/','asanaicon.png');
@@ -51,12 +82,13 @@ app.on('ready', function() {
   appIcon.setToolTip('Asana');
 
   // Oauth authentication
-  var oauthUrl = 'https://app.asana.com/-/oauth_authorize?'
+  var oauthOrAuthorized = 'https://app.asana.com/-/oauth_authorize?'
     + 'client_id=' + options.client_id
     + '&redirect_uri=' + options.redirect_uri
     + '&response_type=' + 'code';
-  mainWindow.loadUrl(oauthUrl, {
-      userAgent: "FluidApp-mac Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
+  mainWindow.loadUrl(oauthOrAuthorized, {
+      userAgent: userAgent
   });
 
   mainWindow.webContents.on('did-get-redirect-request', function(event, oldUrl, newUrl) {
@@ -70,6 +102,10 @@ app.on('ready', function() {
           credentials: credentials
         });
         access_token_set = true;
+      });
+
+      mainWindow.webContents.loadUrl(stateData.url, {
+          userAgent: userAgent
       });
     }
 
@@ -101,12 +137,46 @@ app.on('ready', function() {
     }
   });
 
+  // Restore the last window size and position
+  mainWindow.setBounds(stateData.bounds);
+
+  // Make links open in the default system browser
+  mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
+      event.preventDefault();
+      shell.openExternal(url);
+  });
+
+  // Emitted before the window is closed.
+  mainWindow.on('close', function(event) {
+    // Save the window position, size, and URL to disk
+    var savedStatePath = app.getPath("userData") + "/saved_state";
+    var savedStateData = {
+        bounds: mainWindow.getBounds(),
+        url: mainWindow.webContents.getUrl()
+    };
+    fs.writeFileSync(savedStatePath, JSON.stringify(savedStateData));
+
+    // If we're actually being quit then allow the window to close,
+    // otherwise just hide it
+    if (mainWindow.forceClose) return;
+    event.preventDefault();
+    mainWindow.hide();
+  });
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
+  });
+
+  app.on("browser-window-blur", function(event, window) {
+      window.send("blur");
+  });
+
+  app.on("browser-window-focus", function(event, window) {
+      window.send("focus");
   });
 
   // Create the Application's main menu
@@ -193,15 +263,49 @@ app.on('ready', function() {
     label: 'View',
     submenu: [
       {
+        label: 'Copy link to task',
+        accelerator: 'Command+Shift+C',
+        click: function() {
+          var url = BrowserWindow.getFocusedWindow().webContents.getUrl();
+          clipboard.writeText(url);
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         label: 'Reload',
         accelerator: 'Command+R',
         click: function() { BrowserWindow.getFocusedWindow().reloadIgnoringCache(); }
       },
       {
+        label: 'Back',
+        accelerator: 'Command+[',
+        click: function() {
+            var content = BrowserWindow.getFocusedWindow().webContents;
+            if (content.canGoBack()) {
+                content.goBack();
+            }
+        }
+      },
+      {
+        label: 'Forward',
+        accelerator: 'Command+]',
+        click: function() {
+            var content = BrowserWindow.getFocusedWindow().webContents;
+            if (content.canGoForward()) {
+                content.goForward();
+            }
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         label: 'Toggle DevTools',
         accelerator: 'Alt+Command+J',
         click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
-      },
+      }
     ]
   },
   {
