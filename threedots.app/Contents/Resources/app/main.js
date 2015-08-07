@@ -116,6 +116,7 @@ app.on('ready', function() {
         var workspaceId = user.workspaces[0].id;
         return client.tasks.findAll({
           assignee: userId,
+          completed_since: 'now',
           workspace: workspaceId,
           opt_fields: 'id,name,assignee_status,completed,due_on'
         });
