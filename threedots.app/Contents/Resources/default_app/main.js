@@ -237,7 +237,7 @@ app.once('ready', function() {
           },
           {
             label: 'Toggle &Developer Tools',
-            accelerator: 'Alt+Ctrl+I',
+            accelerator: 'Shift+Ctrl+I',
             click: function() {
               var focusedWindow = BrowserWindow.getFocusedWindow();
               if (focusedWindow)
@@ -291,6 +291,7 @@ if (option.file && !option.webdriver) {
         app.setName(packageJson.name);
       app.setPath('userData', path.join(app.getPath('appData'), app.getName()));
       app.setPath('userCache', path.join(app.getPath('cache'), app.getName()));
+      app.setAppPath(packagePath);
     }
 
     // Run the app.
