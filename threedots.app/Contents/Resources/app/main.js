@@ -2,6 +2,7 @@ var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
 var Menu = require('menu');
 var MenuItem = require('menu-item');
+var shell = require('shell');
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -37,6 +38,11 @@ app.on('ready', function() {
   mainWindow.loadUrl('https://app.asana.com', {
       userAgent: "FluidApp-mac Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
   });
+
+  mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
+      event.preventDefault();
+      shell.openExternal(url);
+  })
 
   // Open the devtools.
   //mainWindow.openDevTools();
