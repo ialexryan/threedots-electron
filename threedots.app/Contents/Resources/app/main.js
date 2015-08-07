@@ -38,6 +38,14 @@ function getSavedOrDefaultStateData() {
              url: "https://app.asana.com"}
 }
 
+app.on('before-quit', function() {
+  mainWindow.forceClose = true;
+});
+
+app.on('activate-with-no-open-windows', function() {
+  mainWindow.show();
+});
+
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
 app.on('ready', function() {
@@ -67,13 +75,19 @@ app.on('ready', function() {
   });
 
   // Emitted before the window is closed.
-  mainWindow.on('close', function() {
+  mainWindow.on('close', function(event) {
     var savedStatePath = app.getPath("userData") + "/saved_state";
     var savedStateData = {
         bounds: mainWindow.getBounds(),
         url: mainWindow.webContents.getUrl()
     };
     fs.writeFileSync(savedStatePath, JSON.stringify(savedStateData));
+
+    // If we're actually being quit then allow the window to close,
+    // otherwise just hide it
+    if (mainWindow.forceClose) return;
+    event.preventDefault();
+    mainWindow.hide();
   });
 
   // Emitted when the window is closed.
