@@ -48,6 +48,8 @@ app.on('activate-with-no-open-windows', function() {
 
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
+// This should be abstracted into a showAsana() function
+// which could be called on 'ready' and 'activate-with-no-open-windows' events
 app.on('ready', function() {
 
   var stateData = getSavedOrDefaultStateData();
@@ -64,6 +66,7 @@ app.on('ready', function() {
   // Restore the last window size and position
   mainWindow.setBounds(stateData.bounds);
 
+  // Make links open in the default system browser
   mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
       event.preventDefault();
       shell.openExternal(url);
@@ -76,6 +79,7 @@ app.on('ready', function() {
 
   // Emitted before the window is closed.
   mainWindow.on('close', function(event) {
+    // Save the window position, size, and URL to disk
     var savedStatePath = app.getPath("userData") + "/saved_state";
     var savedStateData = {
         bounds: mainWindow.getBounds(),
