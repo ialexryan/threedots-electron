@@ -34,15 +34,15 @@ app.on('ready', function() {
 
   // and load the index.html of the app.
   //mainWindow.loadUrl('file://' + __dirname + '/index.html');
-  // var userAgent = "FluidApp-Mac" + content?.getUserAgent();
+  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
   mainWindow.loadUrl('https://app.asana.com', {
-      userAgent: "FluidApp-mac Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+       userAgent: userAgent
   });
 
   mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
       event.preventDefault();
       shell.openExternal(url);
-  })
+  });
 
   // Open the devtools.
   //mainWindow.openDevTools();
