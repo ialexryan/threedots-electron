@@ -139,7 +139,7 @@ app.on('ready', function() {
       },
       {
         label: 'Toggle DevTools',
-        accelerator: 'Alt+Command+I',
+        accelerator: 'Alt+Command+J',
         click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
       },
     ]
