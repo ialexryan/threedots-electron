@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string>atom.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.alexryan.threedots2</string>
+	<string>org.alexryan.threedots-electron</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
