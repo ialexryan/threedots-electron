@@ -1,0 +1,34 @@
+/* Finding out how to make the -webkit-app-region property NOT cascade would be great */
+
+/* old sidebar */
+#header {
+    -webkit-app-region: drag;
+}
+
+/* remix sidebar */
+.sidebar-header {
+    -webkit-app-region: drag;
+}
+
+/* top bar */
+.topbar {
+    -webkit-app-region: drag;
+}
+.topbar-navButton,
+.topbar-myTasksButton,
+.topbar-notificationsButton,
+.omnibutton,
+.topbarHelpMenuButton,
+.topbar-settingsMenuButton,
+.typeahead {
+    -webkit-app-region: no-drag;
+}
+
+/* the extra space around the center and right pane */
+.three-panes {
+    -webkit-app-region: drag;
+}
+#center_pane,
+#right_pane {
+    -webkit-app-region: no-drag;
+}
