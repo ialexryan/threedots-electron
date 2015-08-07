@@ -135,7 +135,7 @@ app.on('ready', function() {
       "min-width": 750,
       "min-height": 300,
       "preload": path.resolve(__dirname, "inject.js"),
-      //frame: false,  // https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
+      frame: false,  // https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
       "title": "threedots"
     });
 
@@ -184,7 +184,11 @@ app.on('ready', function() {
   });
 
   // update tray contents every 1 minute
+  // Make certain parts of the window draggable
   mainWindow.webContents.on('did-finish-load', function(event) {
+    var cssPath = path.resolve(__dirname, "frameless.css");
+    var css = fs.readFileSync(cssPath, {encoding: 'utf8'});
+    mainWindow.webContents.insertCSS(css);
     setInterval(function() {
       if (access_token_set) {
         queryTasks();
