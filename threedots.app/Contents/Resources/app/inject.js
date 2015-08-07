@@ -8,6 +8,9 @@
     var lastNotification = null;
     var HtmlNotification = Notification;
     setInterval(function() {
+        // muahaha this line fixes the upload bug
+        // it's in setInterval because host may not be available
+        host.isExceptionHandlerActive = function() { return true; };
         var session = env.realAppSession();
         var inbox = env.user().domainUserForDomain(session.activeDomain()).inbox();
         var hasNotification = inbox.hasNewNotifications();
