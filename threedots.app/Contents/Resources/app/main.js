@@ -177,6 +177,26 @@ app.on('ready', function() {
         accelerator: 'Alt+Command+J',
         click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
       },
+      {
+        label: 'Back',
+        accelerator: 'Command+[',
+        click: function() {
+            var content = BrowserWindow.getFocusedWindow().webContents;
+            if (content.canGoBack()) {
+                content.goBack();
+            }
+        }
+      },
+      {
+        label: 'Forward',
+        accelerator: 'Command+]',
+        click: function() {
+            var content = BrowserWindow.getFocusedWindow().webContents;
+            if (content.canGoForward()) {
+                content.goForward();
+            }
+        }
+      }
     ]
   },
   {
