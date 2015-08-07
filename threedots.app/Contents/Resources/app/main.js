@@ -1,5 +1,6 @@
 var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
+var fs = require('fs');
 var Menu = require('menu');
 var MenuItem = require('menu-item');
 var shell = require('shell');
@@ -21,33 +22,59 @@ app.on('window-all-closed', function() {
   }
 });
 
+function getSavedOrDefaultStateData() {
+  // Read in the saved state
+  var savedStatePath = app.getPath("userData") + "/saved_state";
+  if (fs.existsSync(savedStatePath)) {
+      var savedStateData = JSON.parse(fs.readFileSync(savedStatePath));
+      validSavedStateData = ('bounds','url' in savedStateData)
+                      && (savedStateData.url.startsWith("https://app.asana.com"))
+                      && ('x','y','width','height' in savedStateData.bounds);
+      if (validSavedStateData) {
+          return savedStateData;
+      }
+  }
+  return {bounds: {x: 0, y: 0, width: 1280, height: 800},
+             url: "https://app.asana.com"}
+}
+
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
 app.on('ready', function() {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({"width": 1280,
-                                  "height": 800,
-                                  "min-width": 750,
-                                  "min-height": 300,
-                                  "preload": path.resolve(__dirname, "inject.js"),
-                                  //frame: false,   https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
-                                  "title": "threedots"
-                                });
 
-  // and load the index.html of the app.
-  //mainWindow.loadUrl('file://' + __dirname + '/index.html');
-  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
-  mainWindow.loadUrl('https://app.asana.com', {
-       userAgent: userAgent
-  });
+  var stateData = getSavedOrDefaultStateData();
+
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+      "min-width": 750,
+      "min-height": 300,
+      "preload": path.resolve(__dirname, "inject.js"),
+      //frame: false,  // https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
+      "title": "threedots"
+    });
+
+  // Restore the last window size and position
+  mainWindow.setBounds(stateData.bounds);
 
   mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
       event.preventDefault();
       shell.openExternal(url);
   });
 
-  // Open the devtools.
-  //mainWindow.openDevTools();
+  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
+  mainWindow.webContents.loadUrl(stateData.url, {
+       userAgent: userAgent
+  });
+
+  // Emitted before the window is closed.
+  mainWindow.on('close', function() {
+    var savedStatePath = app.getPath("userData") + "/saved_state";
+    var savedStateData = {
+        bounds: mainWindow.getBounds(),
+        url: mainWindow.webContents.getUrl()
+    };
+    fs.writeFileSync(savedStatePath, JSON.stringify(savedStateData));
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
