@@ -42,6 +42,43 @@ function getSavedOrDefaultStateData() {
              url: "https://app.asana.com"};
 }
 
+// show tasks due today and marked today in tray
+function updateTrayContents(list) {
+  contextMenu = new Menu();
+  var markedToday = [];
+  var dueToday = [];
+  list.forEach(function(item) {
+    if (item.due_on === new Date().toJSON().slice(0,10)) {
+      dueToday.push(new MenuItem({
+          label: item.name,
+          click: function() {
+              mainWindow.send("load-task", item.id);
+              mainWindow.show();
+          }
+      }));
+    } else {
+      markedToday.push(new MenuItem({
+          label: item.name,
+          click: function() {
+              mainWindow.send("load-task", item.id);
+              mainWindow.show();
+          }
+      }));
+    }
+  });
+  contextMenu.append(new MenuItem({ label: 'DUE TODAY', enabled: false }));
+  dueToday.forEach(function(task) {
+    contextMenu.append(task);
+  });
+  contextMenu.append(new MenuItem({ type: 'separator' }));
+  contextMenu.append(new MenuItem({ label: 'MARKED TODAY', enabled: false }));
+  markedToday.forEach(function(task) {
+    contextMenu.append(task);
+  });
+
+  appIcon.setContextMenu(contextMenu);
+}
+
 app.on('before-quit', function() {
   mainWindow.forceClose = true;
 });
@@ -133,40 +170,7 @@ app.on('ready', function() {
         return task.due_on === new Date().toJSON().slice(0,10) ||
           task.assignee_status === 'today';
       }).then(function(list) {
-        // show tasks due today
-        contextMenu = new Menu();
-        var markedToday = [];
-        var dueToday = [];
-        list.forEach(function(item) {
-          if (item.due_on === new Date().toJSON().slice(0,10)) {
-            dueToday.push(new MenuItem({
-                label: item.name,
-                click: function() {
-                    mainWindow.send("load-task", item.id);
-                    mainWindow.show();
-                }
-            }));
-          } else {
-            markedToday.push(new MenuItem({
-                label: item.name,
-                click: function() {
-                    mainWindow.send("load-task", item.id);
-                    mainWindow.show();
-                }
-            }));
-          }
-        });
-        contextMenu.append(new MenuItem({ label: 'DUE TODAY', enabled: false }));
-        dueToday.forEach(function(task) {
-          contextMenu.append(task);
-        });
-        contextMenu.append(new MenuItem({ type: 'separator' }));
-        contextMenu.append(new MenuItem({ label: 'MARKED TODAY', enabled: false }));
-        markedToday.forEach(function(task) {
-          contextMenu.append(task);
-        });
-
-        appIcon.setContextMenu(contextMenu);
+        updateTrayContents(list);
       });
     }
   });
