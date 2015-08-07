@@ -9,6 +9,7 @@ var path = require('path');
 var shell = require('shell');
 var asana = require('asana');
 var options = require('./options');
+var ipc = require("ipc");
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -109,12 +110,6 @@ app.on('before-quit', function() {
 
 app.on('activate-with-no-open-windows', function() {
   mainWindow.show();
-});
-
-app.on('show-window', function() {
-    console.log("showing window");
-  mainWindow.show();
-  mainWindow.focus();
 });
 
 // Quit when all windows are closed.
@@ -226,6 +221,12 @@ app.on('ready', function() {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
+  });
+
+  ipc.on('show-window', function() {
+      console.log("showing window");
+    mainWindow.show();
+    mainWindow.focus();
   });
 
   app.on("browser-window-blur", function(event, window) {
