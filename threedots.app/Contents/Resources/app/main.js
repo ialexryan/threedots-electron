@@ -4,6 +4,7 @@ var Menu = require('menu');
 var MenuItem = require('menu-item');
 var Tray = require('tray');
 var path = require('path');
+var shell = require('shell');
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -50,6 +51,12 @@ app.on('ready', function() {
   ]);
   appIcon.setToolTip('Asana');
   appIcon.setContextMenu(contextMenu);
+
+  mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
+      event.preventDefault();
+      shell.openExternal(url);
+  })
+
 
   // Open the devtools.
   //mainWindow.openDevTools();
@@ -152,7 +159,7 @@ app.on('ready', function() {
       },
       {
         label: 'Toggle DevTools',
-        accelerator: 'Alt+Command+I',
+        accelerator: 'Alt+Command+J',
         click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
       },
     ]
