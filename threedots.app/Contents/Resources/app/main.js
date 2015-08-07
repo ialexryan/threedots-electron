@@ -54,6 +54,7 @@ function updateTrayContents(list) {
           click: function() {
               mainWindow.send("load-task", item.id);
               mainWindow.show();
+              mainWindow.focus();
           }
       }));
     } else {
@@ -62,6 +63,7 @@ function updateTrayContents(list) {
           click: function() {
               mainWindow.send("load-task", item.id);
               mainWindow.show();
+              mainWindow.focus();
           }
       }));
     }
