@@ -42,7 +42,7 @@ function getSavedOrDefaultStateData() {
              url: "https://app.asana.com"};
 }
 
-// show tasks due today and marked today in tray
+// helper to show tasks due today and marked today in tray
 function updateTrayContents(list) {
   contextMenu = new Menu();
   var markedToday = [];
@@ -77,6 +77,28 @@ function updateTrayContents(list) {
   });
 
   appIcon.setContextMenu(contextMenu);
+}
+
+// helper to get all tasks filtered by due today or marked today
+function queryTasks() {
+  client.users.me().then(function(user) {
+    var userId = user.id;
+    var workspaceId = user.workspaces[0].id;
+    return client.tasks.findAll({
+      assignee: userId,
+      completed_since: 'now',
+      workspace: workspaceId,
+      opt_fields: 'id,name,assignee_status,completed,due_on'
+    });
+  }).then(function(response) {
+    console.log("response data", response.data);
+    return response.data;
+  }).filter(function(task) {
+    return task.due_on === new Date().toJSON().slice(0,10) ||
+      task.assignee_status === 'today';
+  }).then(function(list) {
+    updateTrayContents(list);
+  });
 }
 
 app.on('before-quit', function() {
@@ -152,27 +174,19 @@ app.on('ready', function() {
       });
     }
 
-    // set tray values
+    // set tray values initially
     if (access_token_set) {
-      client.users.me().then(function(user) {
-        var userId = user.id;
-        var workspaceId = user.workspaces[0].id;
-        return client.tasks.findAll({
-          assignee: userId,
-          completed_since: 'now',
-          workspace: workspaceId,
-          opt_fields: 'id,name,assignee_status,completed,due_on'
-        });
-      }).then(function(response) {
-        console.log("response data", response.data);
-        return response.data;
-      }).filter(function(task) {
-        return task.due_on === new Date().toJSON().slice(0,10) ||
-          task.assignee_status === 'today';
-      }).then(function(list) {
-        updateTrayContents(list);
-      });
+      queryTasks();
     }
+  });
+
+  // update tray contents every 1 minute
+  mainWindow.webContents.on('did-finish-load', function(event) {
+    setInterval(function() {
+      if (access_token_set) {
+        queryTasks();
+      }
+    }, 60000);
   });
 
   // Make links open in the default system browser
