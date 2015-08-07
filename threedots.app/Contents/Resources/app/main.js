@@ -150,17 +150,24 @@ app.on('ready', function() {
   var oauthUrl = 'https://app.asana.com/-/oauth_authorize?'
     + 'client_id=' + options.client_id
     + '&redirect_uri=' + options.redirect_uri
+    + '&access_type=offline'
     + '&response_type=' + 'code';
   mainWindow.loadUrl(oauthUrl, {
       userAgent: userAgent
   });
-
+  var code;
   mainWindow.webContents.on('did-get-redirect-request', function(event, oldUrl, newUrl) {
-    var raw_code = /code=([^&]*)/.exec(newUrl) || null,
+    var raw_code = /code=([^&]*)/.exec(newUrl) || null;
       code = (raw_code && raw_code.length > 1) ? decodeURIComponent(raw_code[1]) : null;
 
+    //   code = code.split("-")[0];
+    //   if (code[code.length - 1] === "#") {
+    //       code = code.substr(0, code.length - 1);
+    //   }
+     console.log("hey", code);
+
     // authenticate with access token
-    if (code && !access_token_set) {
+    if (code && !access_token_set && newUrl.indexOf("https://app.asana.com/?code=") === 0) {
       client.app.accessTokenFromCode(code).then(function(credentials) {
         client.useOauth({
           credentials: credentials
