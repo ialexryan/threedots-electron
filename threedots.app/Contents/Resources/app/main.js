@@ -1,5 +1,6 @@
 var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
+var clipboard = require('clipboard');
 var fs = require('fs');
 var Menu = require('menu');
 var MenuItem = require('menu-item');
@@ -194,14 +195,20 @@ app.on('ready', function() {
     label: 'View',
     submenu: [
       {
+        label: 'Copy link to task',
+        accelerator: 'Command+Shift+C',
+        click: function() {
+          var url = BrowserWindow.getFocusedWindow().webContents.getUrl();
+          clipboard.writeText(url);
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
         label: 'Reload',
         accelerator: 'Command+R',
         click: function() { BrowserWindow.getFocusedWindow().reloadIgnoringCache(); }
-      },
-      {
-        label: 'Toggle DevTools',
-        accelerator: 'Alt+Command+J',
-        click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
       },
       {
         label: 'Back',
@@ -222,6 +229,14 @@ app.on('ready', function() {
                 content.goForward();
             }
         }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Toggle DevTools',
+        accelerator: 'Alt+Command+J',
+        click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
       }
     ]
   },
