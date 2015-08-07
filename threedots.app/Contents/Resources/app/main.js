@@ -124,15 +124,30 @@ app.on('ready', function() {
         console.log("response data", response.data);
         return response.data;
       }).filter(function(task) {
-        return task.due_on === new Date().toJSON().slice(0,10);
+        return task.due_on === new Date().toJSON().slice(0,10) ||
+          task.assignee_status === 'today';
       }).then(function(list) {
         // show tasks due today
         contextMenu = new Menu();
-        contextMenu.append(new MenuItem({ label: 'Due Today'}));
-        contextMenu.append(new MenuItem({ type: 'separator' }));
+        var markedToday = [];
+        var dueToday = [];
         for (var i = 0; i < list.length; i++) {
-          contextMenu.append(new MenuItem({ label: list[i].name }));
+          if (list[i].due_on === new Date().toJSON().slice(0,10)) {
+            dueToday.push(new MenuItem({ label: list[i].name }));
+          } else {
+            markedToday.push(new MenuItem({ label: list[i].name }));
+          }
         }
+        contextMenu.append(new MenuItem({ label: 'DUE TODAY'}));
+        dueToday.forEach(function(task) {
+          contextMenu.append(task);
+        });
+        contextMenu.append(new MenuItem({ type: 'separator' }));
+        contextMenu.append(new MenuItem({ label: 'MARKED TODAY'}));
+        markedToday.forEach(function(task) {
+          contextMenu.append(task);
+        });
+
         appIcon.setContextMenu(contextMenu);
       });
     }
