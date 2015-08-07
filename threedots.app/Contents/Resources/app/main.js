@@ -2,6 +2,8 @@ var app = require('app');  // Module to control application life.
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
 var Menu = require('menu');
 var MenuItem = require('menu-item');
+var Tray = require('tray');
+var path = require('path');
 
 // Report crashes to our server.
 require('crash-reporter').start();
@@ -21,6 +23,7 @@ app.on('window-all-closed', function() {
 
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
+var appIcon = null;
 app.on('ready', function() {
   // Create the browser window.
   mainWindow = new BrowserWindow({"width": 1280,
@@ -37,6 +40,16 @@ app.on('ready', function() {
   mainWindow.loadUrl('https://app.asana.com', {
       userAgent: "FluidApp-mac Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
   });
+
+  var iconImage = path.join(__dirname, 'icon/','asanaicon.png');
+  appIcon = new Tray(iconImage);
+  var contextMenu = Menu.buildFromTemplate([
+    { label: 'Task1' },
+    { label: 'Task2' },
+    { label: 'Task3' }
+  ]);
+  appIcon.setToolTip('Asana');
+  appIcon.setContextMenu(contextMenu);
 
   // Open the devtools.
   //mainWindow.openDevTools();
