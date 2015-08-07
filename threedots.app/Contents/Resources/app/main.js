@@ -133,19 +133,29 @@ app.on('ready', function() {
         contextMenu = new Menu();
         var markedToday = [];
         var dueToday = [];
-        for (var i = 0; i < list.length; i++) {
-          if (list[i].due_on === new Date().toJSON().slice(0,10)) {
-            dueToday.push(new MenuItem({ label: list[i].name }));
+        list.forEach(function(item) {
+          if (item.due_on === new Date().toJSON().slice(0,10)) {
+            dueToday.push(new MenuItem({
+                label: item.name,
+                click: function() {
+                    mainWindow.send("load-task", item.id);
+                }
+            }));
           } else {
-            markedToday.push(new MenuItem({ label: list[i].name }));
+            markedToday.push(new MenuItem({
+                label: item.name,
+                click: function() {
+                    mainWindow.send("load-task", item.id);
+                }
+            }));
           }
-        }
-        contextMenu.append(new MenuItem({ label: 'DUE TODAY'}));
+        });
+        contextMenu.append(new MenuItem({ label: 'DUE TODAY', enabled: false }));
         dueToday.forEach(function(task) {
           contextMenu.append(task);
         });
         contextMenu.append(new MenuItem({ type: 'separator' }));
-        contextMenu.append(new MenuItem({ label: 'MARKED TODAY'}));
+        contextMenu.append(new MenuItem({ label: 'MARKED TODAY', enabled: false }));
         markedToday.forEach(function(task) {
           contextMenu.append(task);
         });

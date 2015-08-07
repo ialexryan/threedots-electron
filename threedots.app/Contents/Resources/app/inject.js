@@ -54,4 +54,21 @@
         isActive = false;
     });
 
+
+    ipc.on("load-task", function(taskId) {
+        var session = env.realAppSession();
+        host.wrapInExceptionHandler(
+            "a.meh",
+            ExceptionHandler.ReentryStrategy.FAIL,
+            function() {
+                processHandler(function() {
+                        session.navigateTo(navigationTargetForState({
+                            model: LunaUi.LunaNavigationModel.Project,
+                            target: new TaskId(taskId + "")
+                        }));
+                    });
+                }
+        )();
+    });
+
 })();
