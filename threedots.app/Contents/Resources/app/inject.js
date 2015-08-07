@@ -16,12 +16,12 @@
         var hasNotification = inbox.hasNewNotifications();
         if (hasNotification) {
             app.dock.setBadge("•");
-            var lunaNotification = inbox.lastNotificationOrNull();
+            var lunaNotification = inbox.firstNotificationOrNull();
             if (lunaNotification !== lastNotification) {
                 lastNotification = lunaNotification;
                 if (lastNotification && !document.hasFocus()) {
-                    var title = "Asana";
                     var story = lastNotification.story();
+                    var title = story.parentObject().name();
                     if (Date.now() - story.creationTime() < 1000 * 3600 * 2) {
                         var content = story.creator().name() + ": " + story.text();
                         var notification = new HtmlNotification(title, { body: content });

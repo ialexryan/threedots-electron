@@ -112,6 +112,7 @@ app.on('activate-with-no-open-windows', function() {
 });
 
 app.on('show-window', function() {
+    console.log("showing window");
   mainWindow.show();
   mainWindow.focus();
 });
