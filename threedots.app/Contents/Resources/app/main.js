@@ -18,15 +18,6 @@ require('crash-reporter').start();
 var mainWindow = null;
 var appIcon = null;
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function() {
-  // On OSX it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform != 'darwin') {
-    app.quit();
-  }
-});
-
 // oauth
 var client = asana.Client.create({
     clientId: options.client_id,
@@ -48,7 +39,7 @@ function getSavedOrDefaultStateData() {
       }
   }
   return {bounds: {x: 0, y: 0, width: 1280, height: 800},
-             url: "https://app.asana.com"}
+             url: "https://app.asana.com"};
 }
 
 app.on('before-quit', function() {
@@ -59,14 +50,20 @@ app.on('activate-with-no-open-windows', function() {
   mainWindow.show();
 });
 
+// Quit when all windows are closed.
+app.on('window-all-closed', function() {
+  // On OSX it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform != 'darwin') {
+    app.quit();
+  }
+});
+
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
 // This should be abstracted into a showAsana() function
 // which could be called on 'ready' and 'activate-with-no-open-windows' events
 app.on('ready', function() {
-
-  var stateData = getSavedOrDefaultStateData();
-
   // Create the browser window.
   mainWindow = new BrowserWindow({
       "min-width": 750,
@@ -76,18 +73,23 @@ app.on('ready', function() {
       "title": "threedots"
     });
 
+  var stateData = getSavedOrDefaultStateData();
+  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
+
+  // Restore the last window size and position
+  mainWindow.setBounds(stateData.bounds);
+
   // Create the tray
   var iconImage = path.join(__dirname, 'icon/','asanaicon.png');
   appIcon = new Tray(iconImage);
   appIcon.setToolTip('Asana');
 
   // Oauth authentication
-  var oauthOrAuthorized = 'https://app.asana.com/-/oauth_authorize?'
+  var oauthUrl = 'https://app.asana.com/-/oauth_authorize?'
     + 'client_id=' + options.client_id
     + '&redirect_uri=' + options.redirect_uri
     + '&response_type=' + 'code';
-  var userAgent = "FluidApp-mac " + mainWindow.webContents.getUserAgent();
-  mainWindow.loadUrl(oauthOrAuthorized, {
+  mainWindow.loadUrl(oauthUrl, {
       userAgent: userAgent
   });
 
@@ -136,9 +138,6 @@ app.on('ready', function() {
       });
     }
   });
-
-  // Restore the last window size and position
-  mainWindow.setBounds(stateData.bounds);
 
   // Make links open in the default system browser
   mainWindow.webContents.on('new-window', function (event, url, frameName, disposition) {
