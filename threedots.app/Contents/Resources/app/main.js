@@ -50,6 +50,10 @@ app.on('activate-with-no-open-windows', function() {
   mainWindow.show();
 });
 
+app.on('show-window', function() {
+  mainWindow.show();
+});
+
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
   // On OSX it is common for applications and their menu bar
@@ -139,6 +143,7 @@ app.on('ready', function() {
                 label: item.name,
                 click: function() {
                     mainWindow.send("load-task", item.id);
+                    mainWindow.show();
                 }
             }));
           } else {
@@ -146,6 +151,7 @@ app.on('ready', function() {
                 label: item.name,
                 click: function() {
                     mainWindow.send("load-task", item.id);
+                    mainWindow.show();
                 }
             }));
           }

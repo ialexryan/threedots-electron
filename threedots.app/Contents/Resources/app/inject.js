@@ -36,6 +36,7 @@
                                         });
                                     }
                             )();
+                            ipc.send("show-window");
                         }
                     }
                 }
