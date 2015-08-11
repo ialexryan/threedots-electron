@@ -1,0 +1,62 @@
+/* Finding out how to make the -webkit-app-region property NOT cascade would be great */
+
+/* old sidebar */
+#header {
+    -webkit-app-region: drag;
+}
+
+/* remix sidebar */
+.sidebar-header {
+    -webkit-app-region: drag;
+}
+
+/* top bar */
+.topbar {
+    -webkit-app-region: drag;
+}
+.topbar-navButton,
+.topbar-myTasksButton,
+.topbar-notificationsButton,
+.omnibutton,
+.topbarHelpMenuButton,
+.topbar-settingsMenuButton,
+.typeahead {
+    -webkit-app-region: no-drag;
+}
+
+/* the extra space around the center and right pane */
+.three-panes {
+    -webkit-app-region: drag;
+}
+#center_pane,
+#right_pane {
+    -webkit-app-region: no-drag;
+}
+
+/* the loading screen */
+#loading_screen_background {
+    -webkit-app-region: drag;
+}
+
+/* the login screen */
+.dialog-page {
+    -webkit-app-region: drag;
+}
+.dialog-container {
+    -webkit-app-region: no-drag;
+}
+
+/* google login process */
+.wrapper {               /* I pray Asana never starts using a class called wrapper... */
+    -webkit-app-region: drag;
+}
+.signin-card,
+.account-chooser-card,
+.accountchooser-card,
+#account-chooser-link,
+#account-chooser-options,
+.form-panel.first,
+.form-panel.second,
+#connect-container {
+    -webkit-app-region: no-drag;
+}

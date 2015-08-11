@@ -1,9 +1,0 @@
-{
-  "name"    : "threedots",
-  "version" : "2.0.0",
-  "main"    : "main.js",
-  "dependencies" :
-  {
-    "asana": "0.9.1"
-  }
-}
