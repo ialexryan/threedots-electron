@@ -58,7 +58,7 @@ app.on('ready', function() {
       "min-width": 750,
       "min-height": 300,
       "preload": path.resolve(__dirname, "inject.js"),
-      frame: false,  // https://github.com/atom/electron/blob/master/docs/api/frameless-window.md
+      'title-bar-style': 'hidden-inset',
       "title": "threedots"
     });
 
