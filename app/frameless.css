@@ -1,5 +1,9 @@
 /* Finding out how to make the -webkit-app-region property NOT cascade would be great */
 
+#logo {
+    margin-left: 75px;
+}
+
 /* old sidebar */
 #header {
     -webkit-app-region: drag;
