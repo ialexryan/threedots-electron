@@ -1,8 +1,25 @@
 /* Finding out how to make the -webkit-app-region property NOT cascade would be great */
 
-#logo {
-    margin-left: 75px;
+/* Move reskin logo */
+div#header.has-reskinLogo {
+    background-position-x: 110px;
 }
+
+/* Move non-reskin logo */
+#logo {
+    margin-left: 120px;
+}
+
+/* Hide reskin sidebar close button */
+.navigationDockView-closeButton {
+    visibility: hidden;
+}
+
+/* Hide non-reskin sidebar close button */
+.topbar-navButton.is-active {
+    visibility: hidden;
+}
+
 
 /* old sidebar */
 #header {
