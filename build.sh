@@ -16,7 +16,7 @@ electron-packager app/ threedots \
     --asar \
     --overwrite \
     --out=releases \
-    --app-version=2.1.1 \
+    --app-version=2.1.2 \
     --app-bundle-id=com.threedotsapp \
     --helper-bundle-id=com.threedotsapp.helper \
     --icon=icon.icns \
