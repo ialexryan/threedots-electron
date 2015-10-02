@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Check that we're on the release branch
+if [ `git symbolic-ref --short -q HEAD` != "release" ]
+then
+    echo "Not currently on the release branch."
+    exit 1
+fi
+
 # First, install our app's dependencies
 cd app/
 npm install
