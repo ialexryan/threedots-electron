@@ -108,8 +108,9 @@ app.on('before-quit', function() {
   mainWindow.forceClose = true;
 });
 
-app.on('activate-with-no-open-windows', function() {
+app.on('activate', function() {
   mainWindow.show();
+  mainWindow.focus();
 });
 
 // Quit when all windows are closed.
