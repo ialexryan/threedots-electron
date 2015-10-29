@@ -19,7 +19,7 @@ which electron-packager || npm i electron-packager -g
 electron-packager app/ threedots \
     --platform=darwin \
     --arch=all \
-    --version=0.33.0 \
+    --version=0.34.1 \
     --asar \
     --overwrite \
     --out=releases \
