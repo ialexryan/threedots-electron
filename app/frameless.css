@@ -46,7 +46,8 @@ div#header.has-reskinLogo {
 }
 
 /* the extra space around the center and right pane */
-.three-panes {
+.three-panes,
+.asanaView-body {
     -webkit-app-region: drag;
 }
 #center_pane,
